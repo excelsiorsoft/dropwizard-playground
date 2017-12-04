@@ -1,0 +1,3 @@
+#configurations for our sayingFactory
+helloapp:
+	saying: Hola Dropwizard de
