@@ -1,5 +1,6 @@
 package com.excelsiorsoft.examples.dropwizard;
 
+import com.excelsiorsoft.examples.dropwizard.audit.AuditRequestFilter;
 import com.excelsiorsoft.examples.dropwizard.resources.HolaRestResource;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -33,6 +34,7 @@ public class HolaDropwizardApplication extends Application<HolaDropwizardConfigu
     public void run(final HolaDropwizardConfiguration configuration,
                     final Environment environment) {
         environment.jersey().register(new HolaRestResource(configuration.getSayingFactory().getSaying()));
+        environment.jersey().register(AuditRequestFilter.class);
     }
 
 }
