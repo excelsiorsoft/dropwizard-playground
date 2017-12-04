@@ -7,6 +7,14 @@ import java.net.UnknownHostException;
 
 @Path("/api")
 public class HolaRestResource {
+
+
+    private String saying;
+
+    public HolaRestResource(final String saying) {
+        this.saying = saying;
+    }
+
     @Path("/hola")
     @GET
     public String hola() throws UnknownHostException {
@@ -17,7 +25,7 @@ public class HolaRestResource {
         } catch (UnknownHostException e) {
             hostname = "unknown";
         }
-        return "Hola Dropwizard de " + hostname;
+        return /*"Hola Dropwizard de "*/ saying + hostname;
     }
 
 }

@@ -128,7 +128,13 @@
                     </mainClass>
                     <arguments>
                         <argument>server</argument>
+                        <argument>conf/application.yml</argument>
+                       <!-- <argument>-Ddw.helloapp.saying=Gutten Tag</argument>-->
                     </arguments>
+                    <!--<environmentVariables>
+                        <key>dw.helloapp.saying</key>
+                        <value>Guten Tag</value>
+                    </environmentVariables>-->
                 </configuration>
             </plugin>
         </plugins>
