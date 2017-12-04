@@ -1,5 +1,6 @@
 package com.excelsiorsoft.examples.dropwizard;
 
+import com.excelsiorsoft.examples.dropwizard.resources.HolaRestResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -23,7 +24,7 @@ public class HolaDropwizardApplication extends Application<HolaDropwizardConfigu
     @Override
     public void run(final HolaDropwizardConfiguration configuration,
                     final Environment environment) {
-        // TODO: implement application
+        environment.jersey().register(new HolaRestResource());
     }
 
 }
