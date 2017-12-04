@@ -6,9 +6,9 @@ import io.dropwizard.setup.Environment;
 
 public class HolaDropwizardApplication extends Application<HolaDropwizardConfiguration> {
 
-    public static void main(final String[] args) throws Exception {
-        new HolaDropwizardApplication().run(args);
-    }
+        public static void main(final String[] args) throws Exception {
+            new HolaDropwizardApplication().run(args);
+        }
 
     @Override
     public String getName() {
