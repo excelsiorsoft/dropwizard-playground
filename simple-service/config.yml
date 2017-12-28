@@ -1,4 +1,8 @@
+server:
+    rootPath: /api/*
+    dateFormat: yyyy-MM-dd'T'HH:mmZ
+
 logging:
   level: INFO
   loggers:
-    com.excelsiorsoft.dropwizard-playground: DEBUG
+    com.excelsiorsoft.examples: DEBUG
