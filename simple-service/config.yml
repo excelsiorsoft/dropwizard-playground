@@ -1,6 +1,7 @@
 server:
     rootPath: /api/*
-    dateFormat: yyyy-MM-dd'T'HH:mmZ
+
+dateFormat: yyyy-MM-dd'T'HH:mmZ
 
 logging:
   level: INFO

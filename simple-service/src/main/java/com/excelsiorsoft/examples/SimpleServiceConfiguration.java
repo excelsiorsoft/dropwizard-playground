@@ -6,5 +6,11 @@ import org.hibernate.validator.constraints.*;
 import javax.validation.constraints.*;
 
 public class SimpleServiceConfiguration extends Configuration {
-    // TODO: implement service configuration
+
+    @NotEmpty
+    private String dateFormat;
+
+    public String getDateFormat() {
+        return dateFormat;
+    }
 }
