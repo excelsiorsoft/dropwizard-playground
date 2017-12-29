@@ -27,6 +27,15 @@ When a filter or an interceptor is limited only to a specific resource method we
 
 Filters and interceptors that do not have such a limitation are called *global*.
 
+Name-binding needs to be:
+
+    - Defined
+
+    - Bound to both interceptor/filter and relevant endpoint
+
+    - Registered with JAX-RS (Jersey)
+
+
 - Name-bound interceptor example:
 
   - see package: *com.excelsiorsoft.examples.compress*
