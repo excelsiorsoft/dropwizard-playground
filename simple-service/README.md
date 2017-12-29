@@ -1,7 +1,7 @@
-# simpleService
+# SimpleService
 
-How to start the simpleService application
----
+How to start the SimpleService application
+------------------------------------------
 
 $ curl -X GET http://localhost:8080/api/events
 
