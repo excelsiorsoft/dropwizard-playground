@@ -21,7 +21,7 @@ public class ClientInvocationResource {
 
     @GET
     @Path("redirect")
-    public void getRedirect() {
+    public Response getRedirect() {
 
         HelloWorldResource.CreateRoleRequest item = new HelloWorldResource.CreateRoleRequest();
         Client client = ClientBuilder.newClient();
@@ -32,6 +32,7 @@ public class ClientInvocationResource {
                 .put(Entity.json(item));
 
         logger.debug("Here's my response: {}", response);
+        return response;
     }
 
 

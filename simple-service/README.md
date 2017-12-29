@@ -127,6 +127,32 @@ while this:
      0:0:0:0:0:0:0:1 - - [29/Dec/2017:18:26:58 +0000] "GET /api/helloworld/too-much-data HTTP/1.1" 200 72 "-" "curl/7.55.0" 50
 
 
+Redirects:
+----------
+
+    $ curl -i -X GET http://localhost:8080/api/client/redirect
+    HTTP/1.1 304 Not Modified
+    Date: Fri, 29 Dec 2017 20:52:45 GMT
+    Content-Type: application/json
+
+
+
+    $ curl -v -X GET http://localhost:8080/api/client/redirect
+    Note: Unnecessary use of -X or --request, GET is already inferred.
+    * timeout on name lookup is not supported
+    *   Trying ::1...
+    * TCP_NODELAY set
+    * Connected to localhost (::1) port 8080 (#0)
+    > GET /api/client/redirect HTTP/1.1
+    > Host: localhost:8080
+    > User-Agent: curl/7.55.0
+    > Accept: */*
+    >
+    < HTTP/1.1 304 Not Modified
+    < Date: Fri, 29 Dec 2017 20:54:25 GMT
+    < Content-Type: application/json
+    <
+    * Connection #0 to host localhost left intact
 
 
  More examples:
