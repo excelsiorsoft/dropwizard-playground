@@ -57,6 +57,22 @@ Name-binding needs to be:
       Warning: curl to output it to your terminal anyway, or consider "--output
       Warning: <FILE>" to save to a file.
 
+The name-bound interceptor (designated by a @Compressed annotation in the example) is executed only if any resource method with this annotation is executed.
+It's not executed for any other endpoints which are not decorated with such annotation:
+
+HelloWorldResource#getHello() is not annotated - hence interceptor is bypassed:
+
+    $ curl -X GET http://localhost:8080/api/helloworld/
+    Hello World!
+
+HelloWorldResource#getVeryLongString() is decorated - hence interceptor is executed:
+
+    $ curl -X GET http://localhost:8080/api/helloworld/too-much-data
+    Warning: Binary output can mess up your terminal. Use "--output -" to tell
+    Warning: curl to output it to your terminal anyway, or consider "--output
+    Warning: <FILE>" to save to a file.
+
+
   Logs
   ---
 
