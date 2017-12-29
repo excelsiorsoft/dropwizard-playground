@@ -3,11 +3,13 @@
 How to start the simpleService application
 ---
 
-1. Run `mvn clean install` to build your application
-1. Start application with `java -jar target/simple-service-1.0-SNAPSHOT.jar server config.yml`
-1. To check that your application is running enter url `http://localhost:8080`
+$ curl -X GET http://localhost:8080/api/events
+
+[{"id":10,"name":"Birthday","description":"Please do not be on time!","location":"345B Baker Street","date":"2017-12-28T23:31-0500"}]
 
 Health Check
 ---
 
-To see your applications health enter url `http://localhost:8081/healthcheck`
+$ curl http://localhost:8081/healthcheck
+
+{"deadlocks":{"healthy":true}}
