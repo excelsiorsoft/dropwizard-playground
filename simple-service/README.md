@@ -125,3 +125,18 @@ while this:
      DEBUG [2017-12-29 13:26:58,405] com.excelsiorsoft.examples.compress.GZIPWriterInterceptor: about to compress in the interceptor!
      INFO  [2017-12-29 13:26:58,405] com.excelsiorsoft.examples.compress.GZIPWriterInterceptor: done with compressing, proceeding...
      0:0:0:0:0:0:0:1 - - [29/Dec/2017:18:26:58 +0000] "GET /api/helloworld/too-much-data HTTP/1.1" 200 72 "-" "curl/7.55.0" 50
+
+
+
+
+ More examples:
+---------------
+
+[Logging HTTP requests and responses using filters and name binding annotations](https://stackoverflow.com/a/33667568/1426227)
+
+[Token-based authentication using filters and name binding annotations](https://stackoverflow.com/a/26778123/1426227)
+
+[Using interceptors and name binding annotations to add a property to a JSON with Jackson](https://stackoverflow.com/a/36546268/1426227)
+
+[Filters with name binding for security purposes](https://stackoverflow.com/a/33649605/1426227)
+
