@@ -1,5 +1,6 @@
 package com.excelsiorsoft.examples;
 
+import com.excelsiorsoft.examples.resources.EventResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -29,6 +30,8 @@ public class SimpleServiceApplication extends Application<SimpleServiceConfigura
 
         DateFormat eventDateFormat = new SimpleDateFormat(configuration.getDateFormat());
         environment.getObjectMapper().setDateFormat(eventDateFormat);
+
+        environment.jersey().register(new EventResource());
 
     }
 
