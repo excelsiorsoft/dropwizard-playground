@@ -1,6 +1,7 @@
 package com.excelsiorsoft.examples;
 
 import com.excelsiorsoft.examples.compress.GZIPWriterInterceptor;
+import com.excelsiorsoft.examples.resources.ClientInvocationResource;
 import com.excelsiorsoft.examples.resources.EventResource;
 import com.excelsiorsoft.examples.resources.HelloWorldResource;
 import io.dropwizard.Application;
@@ -36,6 +37,7 @@ public class SimpleServiceApplication extends Application<SimpleServiceConfigura
         environment.jersey().register(new EventResource());
         environment.jersey().register(new HelloWorldResource());
         environment.jersey().register(GZIPWriterInterceptor.class);
+        environment.jersey().register(ClientInvocationResource.class);
 
     }
 
