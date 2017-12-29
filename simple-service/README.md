@@ -1,5 +1,9 @@
 # SimpleService
 
+Takeaways:
+- rootPath
+- no need for annotating model
+
 How to start the SimpleService application
 ------------------------------------------
 
