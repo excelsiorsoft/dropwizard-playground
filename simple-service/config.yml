@@ -1,9 +1,14 @@
 server:
     rootPath: /api/*
 
-dateFormat: yyyy-MM-dd'T'HH:mmZ
+dateFormat: yyyy-MM-dd'T'HH:mm:ss'Z'
 
 logging:
   level: INFO
+  appenders:
+    - type: console
+      threshold: ALL
+      timeZone: America/New_York
+      target: stdout
   loggers:
-    com.excelsiorsoft.examples: DEBUG
+      com.excelsiorsoft.examples: DEBUG

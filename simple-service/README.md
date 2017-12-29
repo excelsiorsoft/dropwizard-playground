@@ -72,9 +72,18 @@ HelloWorldResource#getVeryLongString() is decorated - hence interceptor is execu
     Warning: curl to output it to your terminal anyway, or consider "--output
     Warning: <FILE>" to save to a file.
 
+If the name binding is applied on a resource class (HelloWorldResource would be annotated with @Compress) then all methods of such resource will be compressed.
 
-  Logs
-  ---
+Global filters are executed always, even for resource methods which have any name binding annotations.
+
+See
+   - [@NameBinding annotation documentation](https://docs.oracle.com/javaee/7/api/javax/ws/rs/NameBinding.html) and
+   - [Jersey documentation about filters and interceptors](https://jersey.github.io/documentation/latest/user-guide.html#filters-and-interceptors)
+
+ for details.
+
+Logs
+---
 
   Log levels are configurable (in **config.yml**):
 
@@ -94,3 +103,25 @@ HelloWorldResource#getVeryLongString() is decorated - hence interceptor is execu
           INFO  [2017-12-29 16:25:54,808] com.excelsiorsoft.examples.compress.GZIPWriterInterceptor: done with compressing, proceeding...
           0:0:0:0:0:0:0:1 - - [29/Dec/2017:16:25:54 +0000] "GET /api/helloworld/too-much-data HTTP/1.1" 200 72 "-" "curl/7.55.0" 54
 
+while this:
+
+    logging:
+      level: INFO
+      appenders:
+        - type: console
+          threshold: ALL
+          timeZone: America/New_York
+          target: stdout
+      loggers:
+          com.excelsiorsoft.examples: DEBUG
+
+ will give us proper local time as well as selective logging level:
+
+     INFO  [2017-12-29 13:26:50,713] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@3a36cd5{/,null,AVAILABLE}
+     INFO  [2017-12-29 13:26:50,779] org.eclipse.jetty.server.AbstractConnector: Started application@65a48602{HTTP/1.1,[http/1.1]}{0.0.0.0:8080}
+     INFO  [2017-12-29 13:26:50,779] org.eclipse.jetty.server.AbstractConnector: Started admin@75483843{HTTP/1.1,[http/1.1]}{0.0.0.0:8081}
+     INFO  [2017-12-29 13:26:50,780] org.eclipse.jetty.server.Server: Started @3699ms
+     DEBUG [2017-12-29 13:26:58,399] com.excelsiorsoft.examples.resources.HelloWorldResource: In HelloWorldResource#getVeryLongString()...
+     DEBUG [2017-12-29 13:26:58,405] com.excelsiorsoft.examples.compress.GZIPWriterInterceptor: about to compress in the interceptor!
+     INFO  [2017-12-29 13:26:58,405] com.excelsiorsoft.examples.compress.GZIPWriterInterceptor: done with compressing, proceeding...
+     0:0:0:0:0:0:0:1 - - [29/Dec/2017:18:26:58 +0000] "GET /api/helloworld/too-much-data HTTP/1.1" 200 72 "-" "curl/7.55.0" 50
