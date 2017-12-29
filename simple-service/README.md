@@ -19,5 +19,53 @@ $ curl http://localhost:8081/healthcheck
 {"deadlocks":{"healthy":true}}
 
 
-Interceptors
-------------
+Filters & Interceptors
+----------------------
+*Name binding* is a concept that allows to say to a JAX-RS runtime that a specific filter or interceptor will be executed only for a specific resource method.
+
+When a filter or an interceptor is limited only to a specific resource method we say that it is *name-bound*.
+
+Filters and interceptors that do not have such a limitation are called *global*.
+
+- Name-bound interceptor example:
+
+  - see package: *com.excelsiorsoft.examples.compress*
+
+  Interceptor must be registered with Jersey in the an App:
+
+        environment.jersey().register(GZIPWriterInterceptor.class);
+
+  Without the registration, it's not recognized and the response
+  is plain text:
+
+      $ curl -X GET http://localhost:8080/api/helloworld/too-much-data
+      very long string to be compressed during request processing
+
+  Once properly registered as shown above, the response is no longer text but binary:
+
+      $ curl -X GET http://localhost:8080/api/helloworld/too-much-data
+      Warning: Binary output can mess up your terminal. Use "--output -" to tell
+      Warning: curl to output it to your terminal anyway, or consider "--output
+      Warning: <FILE>" to save to a file.
+
+  Logs
+  ---
+
+  Log levels are configurable (in **config.yml**):
+
+      logging:
+        level: INFO
+        loggers:
+          com.excelsiorsoft.examples: DEBUG
+
+  and will result in the following output in the console:
+
+          INFO  [2017-12-29 16:25:48,916] org.eclipse.jetty.server.handler.ContextHandler: Started i.d.j.MutableServletContextHandler@5d1b1c2a{/,null,AVAILABLE}
+          INFO  [2017-12-29 16:25:49,056] org.eclipse.jetty.server.AbstractConnector: Started application@24e83d19{HTTP/1.1,[http/1.1]}{0.0.0.0:8080}
+          INFO  [2017-12-29 16:25:49,057] org.eclipse.jetty.server.AbstractConnector: Started admin@5c080ef3{HTTP/1.1,[http/1.1]}{0.0.0.0:8081}
+          INFO  [2017-12-29 16:25:49,057] org.eclipse.jetty.server.Server: Started @3465ms
+          DEBUG [2017-12-29 16:25:54,801] com.excelsiorsoft.examples.resources.HelloWorldResource: In HelloWorldResource#getVeryLongString()...
+          DEBUG [2017-12-29 16:25:54,808] com.excelsiorsoft.examples.compress.GZIPWriterInterceptor: about to compress in the interceptor
+          INFO  [2017-12-29 16:25:54,808] com.excelsiorsoft.examples.compress.GZIPWriterInterceptor: done with compressing, proceeding...
+          0:0:0:0:0:0:0:1 - - [29/Dec/2017:16:25:54 +0000] "GET /api/helloworld/too-much-data HTTP/1.1" 200 72 "-" "curl/7.55.0" 54
+
