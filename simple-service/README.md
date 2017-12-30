@@ -130,29 +130,179 @@ while this:
 Redirects:
 ----------
 
-    $ curl -i -X GET http://localhost:8080/api/client/redirect
-    HTTP/1.1 304 Not Modified
-    Date: Fri, 29 Dec 2017 20:52:45 GMT
-    Content-Type: application/json
+When client invocation is coded to return javax.ws.rs.core.Response, everything is hunky-dory:
 
-
-
-    $ curl -v -X GET http://localhost:8080/api/client/redirect
+    $ curl -v -X GET http://localhost:8080/api/client/healthy-redirect
     Note: Unnecessary use of -X or --request, GET is already inferred.
     * timeout on name lookup is not supported
     *   Trying ::1...
     * TCP_NODELAY set
     * Connected to localhost (::1) port 8080 (#0)
-    > GET /api/client/redirect HTTP/1.1
+    > GET /api/client/healthy-redirect HTTP/1.1
     > Host: localhost:8080
     > User-Agent: curl/7.55.0
     > Accept: */*
     >
     < HTTP/1.1 304 Not Modified
-    < Date: Fri, 29 Dec 2017 20:54:25 GMT
+    < Date: Sat, 30 Dec 2017 03:59:34 GMT
     < Content-Type: application/json
     <
     * Connection #0 to host localhost left intact
+
+
+
+    @GET
+    @Path("healthy-redirect")
+    public Response getHealthyRedirect() {
+
+        HelloWorldResource.CreateRoleRequest item = new HelloWorldResource.CreateRoleRequest();
+        Client client = ClientBuilder.newClient().register(
+                (ClientResponseFilter) (requestContext, responseContext) -> {
+                    int length = responseContext.getLength();
+                    int status = responseContext.getStatus();
+                    logger.debug("response length: {} & status {}", length, status);
+                });
+        WebTarget target = client.target("http://localhost:8080/api/helloworld/redirect");
+
+        Response response = target
+                .request()
+                .put(Entity.json(item));
+
+        logger.debug("Here's my response: {}", response);
+        return response;
+    }
+
+
+
+       127.0.0.1 - - [30/Dec/2017:04:00:33 +0000] "PUT /api/helloworld/redirect HTTP/1.1" 304 0 "-" "Jersey/2.25.1 (HttpUrlConnection 1.8.0_144)" 2
+       DEBUG [2017-12-29 23:00:33,599] com.excelsiorsoft.examples.resources.ClientInvocationResource: response length: -1 & status 304
+       DEBUG [2017-12-29 23:00:33,599] com.excelsiorsoft.examples.resources.ClientInvocationResource: Here's my response: InboundJaxrsResponse{context=ClientResponse{method=PUT, uri=http://localhost:8080/api/helloworld/redirect, status=304, reason=Not Modified}}
+       0:0:0:0:0:0:0:1 - - [30/Dec/2017:04:00:33 +0000] "GET /api/client/healthy-redirect HTTP/1.1" 304 0 "-" "curl/7.55.0" 33
+
+
+However, when it's coded to return our own type (even if subtype of Response), not all is peachy.
+Jersey treats 304 redirect status code as error:
+
+    $ curl -v -X GET http://localhost:8080/api/client/exceptional-redirect
+    Note: Unnecessary use of -X or --request, GET is already inferred.
+    * timeout on name lookup is not supported
+    *   Trying ::1...
+    * TCP_NODELAY set
+    * Connected to localhost (::1) port 8080 (#0)
+    > GET /api/client/exceptional-redirect HTTP/1.1
+    > Host: localhost:8080
+    > User-Agent: curl/7.55.0
+    > Accept: */*
+    >
+    < HTTP/1.1 204 No Content
+    < Date: Sat, 30 Dec 2017 04:05:52 GMT
+    <
+    * Connection #0 to host localhost left intact
+
+
+        @GET
+        @Path("exceptional-redirect")
+        public HelloWorldResource.CreateRoleResponse getExRedirect() {
+
+            HelloWorldResource.CreateRoleRequest item = new HelloWorldResource.CreateRoleRequest();
+            Client client = ClientBuilder.newClient()/*.register(new RedirectReaderInterceptor())*/;
+            WebTarget target = client.target("http://localhost:8080/api/helloworld/redirect");
+
+            HelloWorldResource.CreateRoleResponse response = null;
+            try {
+                response = target
+                        .request()
+                        .put(Entity.json(item), HelloWorldResource.CreateRoleResponse.class);
+            }catch(Exception e){
+                logger.error("{}", e);
+            }
+            logger.debug("Here's my response: {}", response);
+            return response;
+        }
+
+        ERROR [2017-12-29 23:05:52,531] com.excelsiorsoft.examples.resources.ClientInvocationResource: {}
+        ! javax.ws.rs.RedirectionException: HTTP 304 Not Modified
+        ! at org.glassfish.jersey.client.JerseyInvocation.createExceptionForFamily(JerseyInvocation.java:1053)
+        ! at org.glassfish.jersey.client.JerseyInvocation.convertToException(JerseyInvocation.java:1039)
+        ! at org.glassfish.jersey.client.JerseyInvocation.translate(JerseyInvocation.java:819)
+        ! at org.glassfish.jersey.client.JerseyInvocation.access$700(JerseyInvocation.java:92)
+        ! at org.glassfish.jersey.client.JerseyInvocation$2.call(JerseyInvocation.java:701)
+        ! at org.glassfish.jersey.internal.Errors.process(Errors.java:315)
+        ! at org.glassfish.jersey.internal.Errors.process(Errors.java:297)
+        ! at org.glassfish.jersey.internal.Errors.process(Errors.java:228)
+        ! at org.glassfish.jersey.process.internal.RequestScope.runInScope(RequestScope.java:444)
+        ! at org.glassfish.jersey.client.JerseyInvocation.invoke(JerseyInvocation.java:697)
+        ! at org.glassfish.jersey.client.JerseyInvocation$Builder.method(JerseyInvocation.java:448)
+        ! at org.glassfish.jersey.client.JerseyInvocation$Builder.put(JerseyInvocation.java:332)
+        ! at com.excelsiorsoft.examples.resources.ClientInvocationResource.getExRedirect(ClientInvocationResource.java:53)
+        ! at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        ! at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+        ! at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+        ! at java.lang.reflect.Method.invoke(Method.java:498)
+        ! at org.glassfish.jersey.server.model.internal.ResourceMethodInvocationHandlerFactory$1.invoke(ResourceMethodInvocationHandlerFactory.java:81)
+        ! at org.glassfish.jersey.server.model.internal.AbstractJavaResourceMethodDispatcher$1.run(AbstractJavaResourceMethodDispatcher.java:144)
+        ! at org.glassfish.jersey.server.model.internal.AbstractJavaResourceMethodDispatcher.invoke(AbstractJavaResourceMethodDispatcher.java:161)
+        ! at org.glassfish.jersey.server.model.internal.JavaResourceMethodDispatcherProvider$ResponseOutInvoker.doDispatch(JavaResourceMethodDispatcherProvider.java:160)
+        ! at org.glassfish.jersey.server.model.internal.AbstractJavaResourceMethodDispatcher.dispatch(AbstractJavaResourceMethodDispatcher.java:99)
+        ! at org.glassfish.jersey.server.model.ResourceMethodInvoker.invoke(ResourceMethodInvoker.java:389)
+        ! at org.glassfish.jersey.server.model.ResourceMethodInvoker.apply(ResourceMethodInvoker.java:347)
+        ! at org.glassfish.jersey.server.model.ResourceMethodInvoker.apply(ResourceMethodInvoker.java:102)
+        ! at org.glassfish.jersey.server.ServerRuntime$2.run(ServerRuntime.java:326)
+        ! at org.glassfish.jersey.internal.Errors$1.call(Errors.java:271)
+        ! at org.glassfish.jersey.internal.Errors$1.call(Errors.java:267)
+        ! at org.glassfish.jersey.internal.Errors.process(Errors.java:315)
+        ! at org.glassfish.jersey.internal.Errors.process(Errors.java:297)
+        ! at org.glassfish.jersey.internal.Errors.process(Errors.java:267)
+        ! at org.glassfish.jersey.process.internal.RequestScope.runInScope(RequestScope.java:317)
+        ! at org.glassfish.jersey.server.ServerRuntime.process(ServerRuntime.java:305)
+        ! at org.glassfish.jersey.server.ApplicationHandler.handle(ApplicationHandler.java:1154)
+        ! at org.glassfish.jersey.servlet.WebComponent.serviceImpl(WebComponent.java:473)
+        ! at org.glassfish.jersey.servlet.WebComponent.service(WebComponent.java:427)
+        ! at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:388)
+        ! at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:341)
+        ! at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:228)
+        ! at io.dropwizard.jetty.NonblockingServletHolder.handle(NonblockingServletHolder.java:49)
+        ! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1650)
+        ! at io.dropwizard.servlets.ThreadNameFilter.doFilter(ThreadNameFilter.java:34)
+        ! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1637)
+        ! at io.dropwizard.jersey.filter.AllowedMethodsFilter.handle(AllowedMethodsFilter.java:45)
+        ! at io.dropwizard.jersey.filter.AllowedMethodsFilter.doFilter(AllowedMethodsFilter.java:39)
+        ! at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1637)
+        ! at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+        ! at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:188)
+        ! at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1253)
+        ! at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:168)
+        ! at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+        ! at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:166)
+        ! at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1155)
+        ! at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:141)
+        ! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+        ! at com.codahale.metrics.jetty9.InstrumentedHandler.handle(InstrumentedHandler.java:241)
+        ! at io.dropwizard.jetty.RoutingHandler.handle(RoutingHandler.java:52)
+        ! at org.eclipse.jetty.server.handler.gzip.GzipHandler.handle(GzipHandler.java:527)
+        ! at io.dropwizard.jetty.BiDiGzipHandler.handle(BiDiGzipHandler.java:68)
+        ! at org.eclipse.jetty.server.handler.RequestLogHandler.handle(RequestLogHandler.java:56)
+        ! at org.eclipse.jetty.server.handler.StatisticsHandler.handle(StatisticsHandler.java:169)
+        ! at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+        ! at org.eclipse.jetty.server.Server.handle(Server.java:561)
+        ! at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:334)
+        ! at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:251)
+        ! at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:279)
+        ! at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:104)
+        ! at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:124)
+        ! at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:247)
+        ! at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.produce(EatWhatYouKill.java:140)
+        ! at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:131)
+        ! at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:243)
+        ! at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:679)
+        ! at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:597)
+        ! at java.lang.Thread.run(Thread.java:748)
+        0:0:0:0:0:0:0:1 - - [30/Dec/2017:04:05:52 +0000] "GET /api/client/exceptional-redirect HTTP/1.1" 204 0 "-" "curl/7.55.0" 42
+        DEBUG [2017-12-29 23:05:52,532] com.excelsiorsoft.examples.resources.ClientInvocationResource: Here's my response: null
+
+
+
+
 
 
  More examples:
