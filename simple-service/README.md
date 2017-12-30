@@ -149,7 +149,7 @@ When client invocation is coded to return javax.ws.rs.core.Response, everything 
     <
     * Connection #0 to host localhost left intact
 
-
+---
 
     @GET
     @Path("healthy-redirect")
@@ -172,7 +172,7 @@ When client invocation is coded to return javax.ws.rs.core.Response, everything 
         return response;
     }
 
-
+---
 
        127.0.0.1 - - [30/Dec/2017:04:00:33 +0000] "PUT /api/helloworld/redirect HTTP/1.1" 304 0 "-" "Jersey/2.25.1 (HttpUrlConnection 1.8.0_144)" 2
        DEBUG [2017-12-29 23:00:33,599] com.excelsiorsoft.examples.resources.ClientInvocationResource: response length: -1 & status 304
@@ -199,7 +199,7 @@ Jersey treats 304 redirect status code as error:
     <
     * Connection #0 to host localhost left intact
 
-
+---
         @GET
         @Path("exceptional-redirect")
         public HelloWorldResource.CreateRoleResponse getExRedirect() {
@@ -219,7 +219,7 @@ Jersey treats 304 redirect status code as error:
             logger.debug("Here's my response: {}", response);
             return response;
         }
-
+---
         ERROR [2017-12-29 23:05:52,531] com.excelsiorsoft.examples.resources.ClientInvocationResource: {}
         ! javax.ws.rs.RedirectionException: HTTP 304 Not Modified
         ! at org.glassfish.jersey.client.JerseyInvocation.createExceptionForFamily(JerseyInvocation.java:1053)
@@ -299,6 +299,78 @@ Jersey treats 304 redirect status code as error:
         ! at java.lang.Thread.run(Thread.java:748)
         0:0:0:0:0:0:0:1 - - [30/Dec/2017:04:05:52 +0000] "GET /api/client/exceptional-redirect HTTP/1.1" 204 0 "-" "curl/7.55.0" 42
         DEBUG [2017-12-29 23:05:52,532] com.excelsiorsoft.examples.resources.ClientInvocationResource: Here's my response: null
+
+
+
+Adding ClientResponseFilter functionality:
+
+    $ curl -v -X GET http://localhost:8080/api/client/redirect-with-body
+    Note: Unnecessary use of -X or --request, GET is already inferred.
+    * timeout on name lookup is not supported
+    *   Trying ::1...
+    * TCP_NODELAY set
+    * Connected to localhost (::1) port 8080 (#0)
+    > GET /api/client/redirect-with-body HTTP/1.1
+    > Host: localhost:8080
+    > User-Agent: curl/7.55.0
+    > Accept: */*
+    >
+    < HTTP/1.1 500 insufficient content written
+    < Date: Sat, 30 Dec 2017 15:40:20 GMT
+    < Cache-Control: must-revalidate,no-cache,no-store
+    < Content-Type: text/html;charset=iso-8859-1
+    < Content-Length: 299
+    <
+    <html>
+    <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <title>Error 500 insufficient content written</title>
+    </head>
+    <body><h2>HTTP ERROR 500</h2>
+    <p>Problem accessing /api/client/redirect-with-body. Reason:
+    <pre>    insufficient content written</pre></p>
+    </body>
+    </html>
+
+
+    ---
+
+
+        @GET
+        @Path("redirect-with-body")
+        public Response getRedirectWithBody() {
+
+
+
+            HelloWorldResource.CreateRoleRequest item = new HelloWorldResource.CreateRoleRequest();
+            Client client = ClientBuilder.newClient().register(
+                    (ClientResponseFilter) (requestContext, responseContext) -> {
+                        int length = responseContext.getLength();
+                        int status = responseContext.getStatus();
+
+
+                        String response = extractResponse(responseContext);
+
+                        logger.debug("response: {}, response length: {} & status {} ", response, length, status);
+                    });
+            WebTarget target = client.target("http://localhost:8080/api/helloworld/entity-redirect");
+
+            Response response = target
+                    .request()
+                    .put(Entity.json(item));
+
+
+            logger.debug("Here's my response: {}", response);
+            return response;
+        }
+
+ ---
+     DEBUG [2017-12-30 10:48:48,405] com.excelsiorsoft.examples.resources.ClientInvocationResource: response: {"fieldA":"201", "fieldB":"description"}, response length: 40 & status 201
+     DEBUG [2017-12-30 10:48:48,405] com.excelsiorsoft.examples.resources.ClientInvocationResource: Here's my response: InboundJaxrsResponse{context=ClientResponse{method=PUT, uri=http://localhost:8080/api/helloworld/entity-redirect, status=201, reason=Created}}
+     127.0.0.1 - - [30/Dec/2017:15:48:48 +0000] "PUT /api/helloworld/entity-redirect HTTP/1.1" 201 40 "-" "Jersey/2.25.1 (HttpUrlConnection 1.8.0_144)" 2
+     0:0:0:0:0:0:0:1 - - [30/Dec/2017:15:48:48 +0000] "GET /api/client/redirect-with-body HTTP/1.1" 500 299 "-" "curl/7.55.0" 41
+
+
 
 
 
