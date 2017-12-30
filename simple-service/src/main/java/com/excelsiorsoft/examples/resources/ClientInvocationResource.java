@@ -20,8 +20,8 @@ public class ClientInvocationResource {
     private final static Logger logger = LoggerFactory.getLogger(ClientInvocationResource.class);
 
     @GET
-    @Path("redirect")
-    public Response getRedirect() {
+    @Path("healthy-redirect")
+    public Response getHealthyRedirect() {
 
         HelloWorldResource.CreateRoleRequest item = new HelloWorldResource.CreateRoleRequest();
         Client client = ClientBuilder.newClient();
@@ -31,6 +31,26 @@ public class ClientInvocationResource {
                 .request()
                 .put(Entity.json(item));
 
+        logger.debug("Here's my response: {}", response);
+        return response;
+    }
+
+    @GET
+    @Path("exceptional-redirect")
+    public HelloWorldResource.CreateRoleResponse getExRedirect() {
+
+        HelloWorldResource.CreateRoleRequest item = new HelloWorldResource.CreateRoleRequest();
+        Client client = ClientBuilder.newClient();
+        WebTarget target = client.target("http://localhost:8080/api/helloworld/redirect");
+
+        HelloWorldResource.CreateRoleResponse response = null;
+        try {
+            response = target
+                    .request()
+                    .put(Entity.json(item), HelloWorldResource.CreateRoleResponse.class);
+        }catch(Exception e){
+            logger.error("{}", e);
+        }
         logger.debug("Here's my response: {}", response);
         return response;
     }
