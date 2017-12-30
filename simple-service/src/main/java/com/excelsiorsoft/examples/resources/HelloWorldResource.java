@@ -55,7 +55,7 @@ public class HelloWorldResource {
         respEntity.setFieldB("description");*/
         return Response.status(201).entity(
                 /*respEntity*/
-               "{\"fieldA\":\"201\", \"fieldB\":\"description\"}"
+               "{\"fieldA\":\"201+\", \"fieldB\":\"description\"}"
         ).build();
 
     }

@@ -335,41 +335,45 @@ Adding ClientResponseFilter functionality:
 
     ---
 
+    @GET
+    @Path("redirect-with-body")
+    public Response getRedirectWithBody() {
 
-        @GET
-        @Path("redirect-with-body")
-        public Response getRedirectWithBody() {
+    class Collector{
+        public String entity;
+    }
 
+    Collector collector = new Collector();
 
+        HelloWorldResource.CreateRoleRequest item = new HelloWorldResource.CreateRoleRequest();
+        Client client = ClientBuilder.newClient().register(
+                (ClientResponseFilter) (requestContext, responseContext) -> {
+                    int length = responseContext.getLength();
+                    int status = responseContext.getStatus();
 
-            HelloWorldResource.CreateRoleRequest item = new HelloWorldResource.CreateRoleRequest();
-            Client client = ClientBuilder.newClient().register(
-                    (ClientResponseFilter) (requestContext, responseContext) -> {
-                        int length = responseContext.getLength();
-                        int status = responseContext.getStatus();
-
-
-                        String response = extractResponse(responseContext);
-
-                        logger.debug("response: {}, response length: {} & status {} ", response, length, status);
-                    });
-            WebTarget target = client.target("http://localhost:8080/api/helloworld/entity-redirect");
-
-            Response response = target
-                    .request()
-                    .put(Entity.json(item));
+                    String response = extractResponse(responseContext);
+                    collector.entity = response;
 
 
-            logger.debug("Here's my response: {}", response);
-            return response;
-        }
+                    logger.debug("response: {}, response length: {} & status {} ", response, length, status);
+                });
+        WebTarget target = client.target("http://localhost:8080/api/helloworld/entity-redirect");
 
+        Response response = target
+                .request()
+                .put(Entity.json(item));
+
+
+        logger.debug("Here's my response: {}", response);
+        logger.debug("Entity: {}", collector.entity.toString());
+        return response;
+    }
  ---
-     DEBUG [2017-12-30 10:48:48,405] com.excelsiorsoft.examples.resources.ClientInvocationResource: response: {"fieldA":"201", "fieldB":"description"}, response length: 40 & status 201
-     DEBUG [2017-12-30 10:48:48,405] com.excelsiorsoft.examples.resources.ClientInvocationResource: Here's my response: InboundJaxrsResponse{context=ClientResponse{method=PUT, uri=http://localhost:8080/api/helloworld/entity-redirect, status=201, reason=Created}}
-     127.0.0.1 - - [30/Dec/2017:15:48:48 +0000] "PUT /api/helloworld/entity-redirect HTTP/1.1" 201 40 "-" "Jersey/2.25.1 (HttpUrlConnection 1.8.0_144)" 2
-     0:0:0:0:0:0:0:1 - - [30/Dec/2017:15:48:48 +0000] "GET /api/client/redirect-with-body HTTP/1.1" 500 299 "-" "curl/7.55.0" 41
-
+    DEBUG [2017-12-30 12:16:56,059] com.excelsiorsoft.examples.resources.ClientInvocationResource: response: {"fieldA":"201+", "fieldB":"description"}, response length: 41 & status 201
+    127.0.0.1 - - [30/Dec/2017:17:16:56 +0000] "PUT /api/helloworld/entity-redirect HTTP/1.1" 201 41 "-" "Jersey/2.25.1 (HttpUrlConnection 1.8.0_144)" 16
+    DEBUG [2017-12-30 12:16:56,059] com.excelsiorsoft.examples.resources.ClientInvocationResource: Here's my response: InboundJaxrsResponse{context=ClientResponse{method=PUT, uri=http://localhost:8080/api/helloworld/entity-redirect, status=201, reason=Created}}
+    DEBUG [2017-12-30 12:16:56,062] com.excelsiorsoft.examples.resources.ClientInvocationResource: Entity: {"fieldA":"201+", "fieldB":"description"}
+    0:0:0:0:0:0:0:1 - - [30/Dec/2017:17:16:56 +0000] "GET /api/client/redirect-with-body HTTP/1.1" 500 299 "-" "curl/7.55.0" 153
 
 
 
