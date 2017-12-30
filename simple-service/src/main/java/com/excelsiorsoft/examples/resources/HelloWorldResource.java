@@ -2,7 +2,6 @@ package com.excelsiorsoft.examples.resources;
 
 import com.excelsiorsoft.examples.compress.Compress;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +10,10 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.lang.annotation.Annotation;
 import java.net.URI;
-import java.util.*;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 
 @Path("helloworld")
@@ -45,10 +47,14 @@ public class HelloWorldResource {
     @PUT
     @Path("entity-redirect")
     @Consumes(MediaType.APPLICATION_JSON)
-    //@Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getEntityRedirect() {
-        //return Response.ok(new CreateRoleResponse()).build();
-        return Response.status(201).entity(/*new CreateRoleResponse().toString()*/
+
+        /*HealthyCreateRoleResponse respEntity = new HealthyCreateRoleResponse();
+        respEntity.setFieldA("201+");
+        respEntity.setFieldB("description");*/
+        return Response.status(201).entity(
+                /*respEntity*/
                "{\"fieldA\":\"201\", \"fieldB\":\"description\"}"
         ).build();
 
@@ -229,18 +235,18 @@ public class HelloWorldResource {
 
     }
 
-    @Data
+    /*@Data
     public static class HealthyCreateRoleResponse {
 
-        @JsonProperty
+        //@JsonProperty
         private String fieldA;
 
-        @JsonProperty
+       // @JsonProperty
         private String fieldB;
 
         public HealthyCreateRoleResponse(){}
 
-    }
+    }*/
 
     public Response createHealthyCreateRoleResponse() {
         String result = "{\"fieldA\":\"201\", \"fieldB\":\"description\"}";

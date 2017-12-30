@@ -72,7 +72,11 @@ public class ClientInvocationResource {
     @Path("redirect-with-body")
     public Response getRedirectWithBody() {
 
+    class Collector{
+        public String entity;
+    }
 
+    Collector collector = new Collector();
 
         HelloWorldResource.CreateRoleRequest item = new HelloWorldResource.CreateRoleRequest();
         Client client = ClientBuilder.newClient().register(
@@ -80,8 +84,9 @@ public class ClientInvocationResource {
                     int length = responseContext.getLength();
                     int status = responseContext.getStatus();
 
-
                     String response = extractResponse(responseContext);
+                    collector.entity = response;
+
 
                     logger.debug("response: {}, response length: {} & status {} ", response, length, status);
                 });
@@ -93,10 +98,13 @@ public class ClientInvocationResource {
 
 
         logger.debug("Here's my response: {}", response);
+        logger.debug("Entity: {}", collector.entity.toString());
         return response;
     }
 
     private String extractResponse(ClientResponseContext responseContext) throws IOException {
+
+
         ByteSource byteSource = new ByteSource() {
             @Override
             public InputStream openStream() throws IOException {
